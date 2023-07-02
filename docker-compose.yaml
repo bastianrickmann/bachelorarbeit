@@ -1,0 +1,17 @@
+version: "3.8"
+services:
+  db:
+    image: postgres
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '2'
+          memory: 2G
+
+    environment:
+      POSTGRES_DB: thesis
+      POSTGRES_PASSWORD: password
