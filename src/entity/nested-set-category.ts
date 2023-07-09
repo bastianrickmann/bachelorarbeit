@@ -9,7 +9,7 @@ import {
 
 @Entity()
 @Tree("nested-set")
-export class Category {
+export class NestedCategory {
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -17,8 +17,8 @@ export class Category {
     name: string;
 
     @TreeChildren()
-    children: Category[];
+    children: NestedCategory[];
 
     @TreeParent()
-    parent: Category;
+    parent: NestedCategory;
 }

@@ -4,21 +4,23 @@ import {
     Column,
     PrimaryGeneratedColumn,
     TreeChildren,
-    TreeParent,
+    TreeParent, TreeLevelColumn,
 } from "typeorm";
 
 @Entity()
 @Tree("closure-table")
-export class Category {
+export class ClosureCategory {
+
     @PrimaryGeneratedColumn()
     id: number;
 
     @Column()
     name: string;
 
-    @TreeChildren()
-    children: Category[];
+    @TreeChildren({cascade: true})
+    children: ClosureCategory[];
 
-    @TreeParent()
-    parent: Category;
+    @TreeParent({onDelete: "CASCADE"})
+    parent: ClosureCategory;
+
 }

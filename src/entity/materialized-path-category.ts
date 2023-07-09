@@ -9,7 +9,7 @@ import {
 
 @Entity()
 @Tree("materialized-path")
-export class Category {
+export class MaterializedCategory {
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -17,8 +17,8 @@ export class Category {
     name: string;
 
     @TreeChildren()
-    children: Category[];
+    children: MaterializedCategory[];
 
     @TreeParent()
-    parent: Category;
+    parent: MaterializedCategory;
 }

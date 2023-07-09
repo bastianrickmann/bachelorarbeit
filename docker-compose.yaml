@@ -6,12 +6,15 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '2'
+          cpus: '4'
           memory: 2G
         reservations:
-          cpus: '2'
+          cpus: '4'
           memory: 2G
 
     environment:
       POSTGRES_DB: thesis
+      POSTGRES_USER: thesis
       POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"

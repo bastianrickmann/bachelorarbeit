@@ -4,12 +4,17 @@
          "es5",
          "es6"
       ],
-      "target": "es5",
-      "module": "commonjs",
+      "target": "es2020",
       "moduleResolution": "node",
-      "outDir": "./build",
+      "outDir": "./dist",
+      "rootDir": "src",
       "emitDecoratorMetadata": true,
       "experimentalDecorators": true,
-      "sourceMap": true
-   }
+      "sourceMap": true,
+      "esModuleInterop": true
+   },
+   "exclude": [
+      "dist",
+      "node_modules"
+   ]
 }
