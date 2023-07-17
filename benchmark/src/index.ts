@@ -31,9 +31,9 @@ figlet("Benchmark", (error, result) => {
 
     /*** Benchmark run ***/
 
-    for(let ti = 0; ti < Settings.ROUNDS; ti++) {
+    for(let ti = 1; ti <= Settings.ROUNDS; ti++) {
 
-        console.log(chalk.greenBright.underline.italic.bold(`BENCHMARKRUN #${ti + 1}`));
+        console.log(chalk.greenBright.underline.italic.bold(`BENCHMARKRUN #${ti}`));
 
         await AppDataSource.initialize();
 
@@ -79,13 +79,12 @@ figlet("Benchmark", (error, result) => {
                         executionTime: measuredTime,
                     },
                     informations: {
-                        round: ti + 1,
                         nodeId: enteredNode.id
                     }
                 };
             }
 
-            await runTestForEachTreeNode("Create " + e.name, createFunction, AppDataSource.getTreeRepository(e), Settings.ROOT_NODE_COUNT, Settings.BRANCH_NODE_COUNT, Settings.TREE_DEPTH, bar);
+            await runTestForEachTreeNode(ti, "Create " + e.name, createFunction, AppDataSource.getTreeRepository(e), Settings.ROOT_NODE_COUNT, Settings.BRANCH_NODE_COUNT, Settings.TREE_DEPTH, bar);
         });
 
         await allRunsCompleted(multibar);

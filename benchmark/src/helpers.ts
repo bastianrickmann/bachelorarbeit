@@ -81,7 +81,7 @@ export const buildTree = async (repository, rootCount: number, childrenCount: nu
 
 
 
-export const runTestForEachTreeNode = async (name: string, testFunction: TestFunction, repository, rootCount: number, childrenCount: number, treeDepth: number, bar: any) => {
+export const runTestForEachTreeNode = async (round: number, name: string, testFunction: TestFunction, repository, rootCount: number, childrenCount: number, treeDepth: number, bar: any) => {
 
 
     //create.ts DataStore
@@ -97,7 +97,7 @@ export const runTestForEachTreeNode = async (name: string, testFunction: TestFun
         const response = await testFunction(referenceNode, repository);
 
         const informations = {
-            round: response.informations.round,
+            round: round,
             nodeId: response.informations.nodeId,
             time: response.measurements.time,
             executionTime: response.measurements.executionTime,

@@ -56,7 +56,7 @@ export default class Benchmark {
 
         /*** Benchmark run ***/
 
-        for(let ti = 0; ti < Settings.ROUNDS; ti++) {
+        for(let ti = 1; ti <= Settings.ROUNDS; ti++) {
 
             console.log(chalk.greenBright.underline.italic.bold(`${this.BenchmarkName} BENCHMARKRUN #${ti + 1}`));
 
@@ -85,29 +85,8 @@ export default class Benchmark {
 
 
                 const bar = multibar.create(0,0);
-                const createFunction: TestFunction = async (parentNode, depth: number, repository: TreeRepository<any>, testSpecificBar: cliProgress.SingleBar) => {
-                    const newRootNode = repository.create({
-                        name: faker.string.alphanumeric({length: 20}),
-                        parent: parentNode
-                    });
 
-                    const startTime = Date.now();
-                    const enteredNode = await repository.save(newRootNode);
-                    const endTime = Date.now();
-
-                    dataStores.get(this.BenchmarkName + e.name).push({
-                        round: ti + 1,
-                        nodeId: enteredNode.id,
-                        time: startTime,
-                        executionTime: endTime - startTime,
-                        treeDepth: depth
-                    });
-
-                    testSpecificBar.update(enteredNode.id, {curAvgTime: getAvgExecutionTime(dataStores.get(this.BenchmarkName + e.name))});
-                    return enteredNode;
-                }
-
-                await runTestForEachTreeNode(this.BenchmarkName + e.name, createFunction, AppDataSource.getTreeRepository(e), Settings.ROOT_NODE_COUNT, Settings.BRANCH_NODE_COUNT, Settings.TREE_DEPTH, bar);
+                await runTestForEachTreeNode(ti, this.BenchmarkName + e.name, this.testFunction, AppDataSource.getTreeRepository(e), Settings.ROOT_NODE_COUNT, Settings.BRANCH_NODE_COUNT, Settings.TREE_DEPTH, bar);
             });
 
             await allRunsCompleted(multibar);
