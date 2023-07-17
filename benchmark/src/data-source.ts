@@ -5,6 +5,8 @@ import {AdjacenyCategory} from "./entity/adjaceny-list-category";
 import {NestedCategory} from "./entity/nested-set-category";
 import {MaterializedCategory} from "./entity/materialized-path-category";
 
+export const entities = [ClosureCategory, AdjacenyCategory, MaterializedCategory, NestedCategory];
+
 export const AppDataSource = new DataSource({
     type: "postgres",
     host: "localhost",
@@ -14,7 +16,7 @@ export const AppDataSource = new DataSource({
     database: "thesis",
     synchronize: true,
     logging: false,
-    entities: [ClosureCategory, AdjacenyCategory, NestedCategory, MaterializedCategory],
+    entities: entities,
     migrations: [],
     subscribers: [],
 })
