@@ -22,5 +22,4 @@ export class ClosureCategory {
 
     @TreeParent()
     parent: ClosureCategory;
-
 }

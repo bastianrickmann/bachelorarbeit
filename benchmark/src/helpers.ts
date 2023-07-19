@@ -1,23 +1,26 @@
-import { stringify } from "csv";
 import cliProgress from "cli-progress";
 import {AppDataSource, entities} from "./data-source"
 import fs from "fs";
 import path from "path";
-import {TreeRepository} from "typeorm";
+import {Repository} from "typeorm";
 import Settings from "./settings";
 import {faker} from "@faker-js/faker/locale/de";
-import {en} from "@faker-js/faker";
+import Measurement, {MeasurementType, MeasurementUnit, Reference} from "./types";
 
 // General helpers
 
-export type TestFunction = (referenceNode: any, repository: TreeRepository<any>) => Promise<{
+export type TestFunction = (referenceNode: any, repository: Repository<any>) => Promise<{
     newReferenceNode?: any,
     messurements?: {
         time: number,
         executionTime: number,
         [key: string]: any },
     informations?: any
-} | any>;
+} | any | Measurement>;
+
+export type RunFunction = ExecutionFunction | MeasurementFunction;
+export type ExecutionFunction = (executionInformation: Reference) => Promise<Reference>;
+export type MeasurementFunction = (executionInformation: Reference) => Promise<Measurement>
 
 export type MeasurementPoint = {
     round: number;
@@ -51,12 +54,11 @@ export const getAllNodes = async (repository) => {
 
 export const iterateTree = async (repository, nodeFunction, rootCount: number, childrenCount: number, treeDepth: number, bar?: cliProgress.SingleBar) => {
 
-    console.log(rootCount, childrenCount, treeDepth, "iterate")
+    let expectedIndex = 0;
     const depthCall = async (nodeFunction, parentNode, depth: number) => {
-        console.log("next child")
         for (let subNodeI = 0; subNodeI < childrenCount; subNodeI++) {
+            expectedIndex++;
             let newSubNode = await nodeFunction(parentNode, depth, repository, bar);
-            console.info(newSubNode)
             if (depth < treeDepth) {
                 await depthCall(nodeFunction, newSubNode, depth + 1);
             }
@@ -64,8 +66,8 @@ export const iterateTree = async (repository, nodeFunction, rootCount: number, c
     }
 
     for (let rootI = 0; rootI < rootCount; rootI++) {
+        expectedIndex++;
         let newRoot = await nodeFunction(null, 1, repository, bar);
-        console.log(newRoot)
         if (1 < treeDepth) {
             await depthCall(nodeFunction, newRoot, 2);
         }
@@ -73,7 +75,6 @@ export const iterateTree = async (repository, nodeFunction, rootCount: number, c
 }
 
 export const buildTree = async (repository, rootCount: number, childrenCount: number, treeDepth: number) => {
-    console.log(rootCount, childrenCount, treeDepth, "build")
     await iterateTree(repository, async (referenceNode, depth, repository) => {
         const newNode = repository.create({
             name: faker.string.alphanumeric({length: 20}),
@@ -88,12 +89,12 @@ export const buildTree = async (repository, rootCount: number, childrenCount: nu
 
 
 
-export const runTestForEachTreeNode = async (round: number, name: string, testFunction: TestFunction, repository, rootCount: number, childrenCount: number, treeDepth: number, bar: any) => {
+export const runTestForEachTreeNode = async (round: number, name: string, testFunction: MeasurementFunction, repository, rootCount: number, childrenCount: number, treeDepth: number, bar: any) => {
 
 
     //create.ts DataStore
     if(!dataStores.get(name)) {
-        dataStores.set(name, new Array<MeasurementPoint>());
+        dataStores.set(name, new Array<Measurement>());
     }
 
 
@@ -101,21 +102,21 @@ export const runTestForEachTreeNode = async (round: number, name: string, testFu
     bar.start(Settings.EXPECTED_NODE_COUNT, 0, {testname: name});
     await iterateTree(repository, async (referenceNode, depth, repository) => {
 
-        const response = await testFunction(referenceNode, repository);
+        const response = await testFunction(
+            {
+                                reference: referenceNode,
+                                referenceRepository: repository,
+                                referenceInformation: {
+                                                rounde: round,
+                                                treeDepth: depth
+                                                }
+                            }
+            );
+        dataStores.get(name).push(response);
 
-        const informations = {
-            round: round,
-            nodeId: response.informations.nodeId,
-            time: response.measurements.time,
-            executionTime: response.measurements.executionTime,
-            treeDepth: depth
-        };
+        bar.update(response.reference.id, {curAvgTime: getAvgExecutionTime(dataStores.get(name))});
 
-        dataStores.get(name).push(informations);
-
-        bar.update(response.newReferenceNode.id, {curAvgTime: getAvgExecutionTime(dataStores.get(name))});
-
-        return response.newReferenceNode;
+        return response.reference;
 
     }, rootCount, childrenCount, treeDepth);
 
@@ -140,23 +141,19 @@ export const writeDataSetToFile = () => {
     //write new measurement data
 
     for (const [name, data] of dataStores.entries()) {
-
-        const stringifier = stringify( { header: true});
-
-        data.forEach((cT) => {
-            stringifier.write(cT);
-        })
-
-        const writableStream = fs.createWriteStream("../ui/public/" + name + '.csv', { flags: "w"});
-        stringifier.pipe(writableStream);
-
+        fs.writeFileSync('../ui/public/' + name + '.json', JSON.stringify(data, null ,2));
     }
 }
 
-export const getAvgExecutionTime = (timeStore: MeasurementPoint[]) => {
-    return timeStore.reduce(function (acc, num) {
-        return acc + num.executionTime;
-    }, 0) / timeStore.length;
+export const getAvgExecutionTime = (timeStore: Measurement[]) => {
+    return Math.round((timeStore.reduce(function (acc, num: Measurement) {
+        if("value" in num && num.label === MeasurementType.EXECUTION_TIME && (!num.unit || num.unit === MeasurementUnit.MS)) {
+            return acc + num.value;
+        } else if ("partialMeasurements" in num) {
+            return acc + (num.partialMeasurements.find((m) =>  m.label  === MeasurementType.EXECUTION_TIME && (!m.unit || m.unit === MeasurementUnit.MS))).value
+        }
+        return acc;
+    }, 0) / timeStore.length)  * 100) / 100;
 }
 
 

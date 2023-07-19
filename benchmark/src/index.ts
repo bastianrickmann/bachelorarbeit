@@ -36,9 +36,9 @@ figlet("Benchmark", (error, result) => {
     await Benchmark1.run();
 
 
-    const Benchmark2 = GetAncestorsBenchmark;
+    //const Benchmark2 = GetAncestorsBenchmark;
 
-    await Benchmark2.run();
+    //await Benchmark2.run();
 
     /*** Benchmark run ***/
 })();

@@ -1,7 +1,7 @@
 import {
     allRunsCompleted,
     forEachImplementation,
-    getStorageName,
+    getStorageName, MeasurementFunction, RunFunction,
     runTestForEachTreeNode,
     TestFunction,
     writeDataSetToFile
@@ -15,7 +15,7 @@ export default class Benchmark {
 
     private BenchmarkName: string;
 
-    private testFunction: TestFunction;
+    private testFunction: MeasurementFunction;
 
     private postProcessing: (...args: any[]) => any;
 
@@ -25,7 +25,7 @@ export default class Benchmark {
         this.BenchmarkName = name;
     }
 
-    public setTestFunction(fn: TestFunction) {
+    public setTestFunction(fn: MeasurementFunction) {
        this.testFunction = fn;
     }
 
@@ -81,7 +81,7 @@ export default class Benchmark {
             const multibar = new cliProgress.MultiBar({
                 clearOnComplete: false,
                 hideCursor: true,
-                format: ' {bar} | {testname} | current Avg. Time: {curAvgTime} | {value}/{total}',
+                format: ' {bar} | {testname} | current avg. time: {curAvgTime}ms | {value}/{total}',
                 stopOnComplete: true
             }, cliProgress.Presets.shades_grey);
 

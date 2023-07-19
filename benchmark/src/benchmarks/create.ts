@@ -1,39 +1,35 @@
 import Benchmark from "../benchmark";
-import {TreeRepository} from "typeorm";
 import {faker} from "@faker-js/faker/locale/de";
-import {
-    AVGMeasurementPoint,
-    dataStores,
-    forEachImplementation,
-    getAvgExecutionTime, getStorageName,
-    MeasurementPoint
-} from "../helpers";
+import {AVGMeasurementPoint, dataStores, forEachImplementation, getStorageName, MeasurementPoint} from "../helpers";
 import _ from "lodash";
+import Measurement, {MeasurementType, MeasurementUnit} from "../types";
 
 const CreateBenchmark = new Benchmark("CREATE");
 
-CreateBenchmark.setTestFunction(async (parentNode, repository: TreeRepository<any>) => {
-    const newRootNode = repository.create({
+CreateBenchmark.setTestFunction(async (executionInformation) => {
+    const newRootNode = executionInformation.referenceRepository.create({
         name: faker.string.alphanumeric({length: 20}),
-        parent: parentNode
+        parent: executionInformation.reference
     });
 
     const startTime = Date.now();
-    const enteredNode = await repository.save(newRootNode);
+    const enteredNode = await executionInformation.referenceRepository.save(newRootNode);
     const endTime = Date.now();
 
     const measuredTime = endTime - startTime;
 
-    return {
-        newReferenceNode: enteredNode,
-        measurements: {
-            time: startTime,
-            executionTime: measuredTime,
+    const m: Measurement = {
+        reference: enteredNode,
+        referenceInformation: {
+            round: executionInformation.referenceInformation.round,
+            treeDepth: executionInformation.referenceInformation.treeDepth,
+            nodeID: enteredNode.id
         },
-        informations: {
-            nodeId: enteredNode.id
-        }
-    };
+        label: MeasurementType.EXECUTION_TIME,
+        value: measuredTime,
+        unit: MeasurementUnit.MS
+    }
+    return m;
 });
 
 
