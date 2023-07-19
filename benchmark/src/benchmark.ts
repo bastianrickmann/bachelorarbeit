@@ -1,15 +1,13 @@
 import {
     allRunsCompleted,
-    dataStores,
     forEachImplementation,
-    getAvgExecutionTime,
+    getStorageName,
     runTestForEachTreeNode,
-    TestFunction, writeDataSetToFile
+    TestFunction,
+    writeDataSetToFile
 } from "./helpers";
 import Settings from "./settings"
 import {AppDataSource} from "./data-source";
-import {TreeRepository} from "typeorm";
-import {faker} from "@faker-js/faker/locale/de";
 import chalk from "chalk";
 import cliProgress from "cli-progress";
 
@@ -21,6 +19,8 @@ export default class Benchmark {
 
     private postProcessing: (...args: any[]) => any;
 
+    private preRunFunction: (...args: any[]) => any = () => {};
+
     constructor(name: string) {
         this.BenchmarkName = name;
     }
@@ -29,8 +29,12 @@ export default class Benchmark {
        this.testFunction = fn;
     }
 
-    public setPostProcessingFunction(fn: (...args: any[]) => any) {
+    public setPostProcessingFunction(fn: (benchmarkName: string) => void) {
         this.postProcessing = fn;
+    }
+
+    public setPreRunFunction(fn: (repository) => void) {
+        this.preRunFunction = fn;
     }
 
 
@@ -42,7 +46,7 @@ export default class Benchmark {
 
         await this.benchmark();
 
-        await this.postProcessing();
+        await this.postProcessing(this.BenchmarkName);
 
 
         writeDataSetToFile();
@@ -58,7 +62,8 @@ export default class Benchmark {
 
         for(let ti = 1; ti <= Settings.ROUNDS; ti++) {
 
-            console.log(chalk.greenBright.underline.italic.bold(`${this.BenchmarkName} BENCHMARKRUN #${ti + 1}`));
+
+            console.log(chalk.greenBright.underline.italic.bold(`${this.BenchmarkName} BENCHMARKRUN #${ti}`));
 
             await AppDataSource.initialize();
 
@@ -83,10 +88,11 @@ export default class Benchmark {
 
             forEachImplementation(async (e) => {
 
+                await this.preRunFunction(AppDataSource.getTreeRepository(e));
 
                 const bar = multibar.create(0,0);
 
-                await runTestForEachTreeNode(ti, this.BenchmarkName + e.name, this.testFunction, AppDataSource.getTreeRepository(e), Settings.ROOT_NODE_COUNT, Settings.BRANCH_NODE_COUNT, Settings.TREE_DEPTH, bar);
+                await runTestForEachTreeNode(ti, getStorageName(this.BenchmarkName, e.name), this.testFunction, AppDataSource.getTreeRepository(e), Settings.ROOT_NODE_COUNT, Settings.BRANCH_NODE_COUNT, Settings.TREE_DEPTH, bar);
             });
 
             await allRunsCompleted(multibar);

@@ -17,10 +17,10 @@ export class ClosureCategory {
     @Column()
     name: string;
 
-    @TreeChildren({cascade: true})
+    @TreeChildren()
     children: ClosureCategory[];
 
-    @TreeParent({onDelete: "CASCADE"})
+    @TreeParent()
     parent: ClosureCategory;
 
 }

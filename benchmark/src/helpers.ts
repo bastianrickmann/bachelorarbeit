@@ -6,6 +6,7 @@ import path from "path";
 import {TreeRepository} from "typeorm";
 import Settings from "./settings";
 import {faker} from "@faker-js/faker/locale/de";
+import {en} from "@faker-js/faker";
 
 // General helpers
 
@@ -50,9 +51,12 @@ export const getAllNodes = async (repository) => {
 
 export const iterateTree = async (repository, nodeFunction, rootCount: number, childrenCount: number, treeDepth: number, bar?: cliProgress.SingleBar) => {
 
+    console.log(rootCount, childrenCount, treeDepth, "iterate")
     const depthCall = async (nodeFunction, parentNode, depth: number) => {
+        console.log("next child")
         for (let subNodeI = 0; subNodeI < childrenCount; subNodeI++) {
             let newSubNode = await nodeFunction(parentNode, depth, repository, bar);
+            console.info(newSubNode)
             if (depth < treeDepth) {
                 await depthCall(nodeFunction, newSubNode, depth + 1);
             }
@@ -61,6 +65,7 @@ export const iterateTree = async (repository, nodeFunction, rootCount: number, c
 
     for (let rootI = 0; rootI < rootCount; rootI++) {
         let newRoot = await nodeFunction(null, 1, repository, bar);
+        console.log(newRoot)
         if (1 < treeDepth) {
             await depthCall(nodeFunction, newRoot, 2);
         }
@@ -68,12 +73,14 @@ export const iterateTree = async (repository, nodeFunction, rootCount: number, c
 }
 
 export const buildTree = async (repository, rootCount: number, childrenCount: number, treeDepth: number) => {
-
-    await iterateTree(repository, (referenceNode, depth, repository) => {
-        return repository.create({
+    console.log(rootCount, childrenCount, treeDepth, "build")
+    await iterateTree(repository, async (referenceNode, depth, repository) => {
+        const newNode = repository.create({
             name: faker.string.alphanumeric({length: 20}),
-            parent: null
+            parent: referenceNode
         });
+        const enteredNode = await repository.save(newNode);
+        return enteredNode;
     }, rootCount, childrenCount, treeDepth);
 
 }
@@ -157,4 +164,8 @@ export const forEachImplementation = (fn: (e) => void) => {
     for(let e of entities) {
         fn(e);
     }
+}
+
+export const getStorageName = (benchmarkName: string, entityName: string, ...prefix: string[]) =>  {
+    return [benchmarkName, ...prefix, entityName].join(" ")
 }

@@ -2,24 +2,31 @@ import Benchmark from "../benchmark";
 import {TreeRepository} from "typeorm";
 import {faker} from "@faker-js/faker/locale/de";
 import {
-    AVGMeasurementPoint,
+    AVGMeasurementPoint, buildTree,
     dataStores,
     forEachImplementation,
     getAvgExecutionTime, getStorageName,
     MeasurementPoint
 } from "../helpers";
 import _ from "lodash";
+import Settings from "../settings";
 
-const CreateBenchmark = new Benchmark("CREATE");
+const GetAncestorsBenchmark = new Benchmark("ANCESTORS");
 
-CreateBenchmark.setTestFunction(async (parentNode, repository: TreeRepository<any>) => {
-    const newRootNode = repository.create({
-        name: faker.string.alphanumeric({length: 20}),
-        parent: parentNode
-    });
+
+GetAncestorsBenchmark.setPreRunFunction(async (repository) => {
+    await buildTree(repository, Settings.ROOT_NODE_COUNT, Settings.BRANCH_NODE_COUNT, Settings.TREE_DEPTH);
+});
+
+GetAncestorsBenchmark.setTestFunction(async (parentNode, repository: TreeRepository<any>) => {
+    const findNode = await repository.findOne({where: {
+        parent: parentNode && { id :  parentNode.id } || null
+    }})
+
+    console.log(parentNode, findNode, "find")
 
     const startTime = Date.now();
-    const enteredNode = await repository.save(newRootNode);
+    const enteredNode = await repository.findAncestors(findNode);
     const endTime = Date.now();
 
     const measuredTime = endTime - startTime;
@@ -31,14 +38,14 @@ CreateBenchmark.setTestFunction(async (parentNode, repository: TreeRepository<an
             executionTime: measuredTime,
         },
         informations: {
-            nodeId: enteredNode.id
+            nodeId: findNode.id
         }
     };
 });
 
 
 
-CreateBenchmark.setPostProcessingFunction((benchmarkName) => {
+GetAncestorsBenchmark.setPostProcessingFunction((benchmarkName) => {
 
 
     forEachImplementation((e) => {
@@ -164,4 +171,4 @@ CreateBenchmark.setPostProcessingFunction((benchmarkName) => {
 
 
 
-export default CreateBenchmark;
+export default GetAncestorsBenchmark;
