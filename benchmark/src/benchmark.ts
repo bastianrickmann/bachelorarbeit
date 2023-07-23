@@ -13,7 +13,7 @@ import cliProgress from "cli-progress";
 
 export default class Benchmark {
 
-    private BenchmarkName: string;
+    protected BenchmarkName: string;
 
     private testFunction: MeasurementFunction;
 

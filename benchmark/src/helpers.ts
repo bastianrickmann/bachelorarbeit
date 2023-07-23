@@ -5,7 +5,8 @@ import path from "path";
 import {Repository} from "typeorm";
 import Settings from "./settings";
 import {faker} from "@faker-js/faker/locale/de";
-import Measurement, {MeasurementType, MeasurementUnit, Reference} from "./types";
+import Measurement, {MeasurementType, MeasurementUnit, Reference, SingleMeasurement} from "./types";
+import _ from "lodash";
 
 // General helpers
 
@@ -157,6 +158,14 @@ export const getAvgExecutionTime = (timeStore: Measurement[]) => {
 }
 
 
+export const getMeasurementValue = (m: Measurement, valueName: MeasurementType) => {
+    if("value" in m && m.label === valueName) {
+        return m.value;
+    } else if ("partialMeasurements" in m) {
+        return (m.partialMeasurements.find((m) =>  m.label  === valueName)).value
+    }
+}
+
 export const forEachImplementation = (fn: (e) => void) => {
     for(let e of entities) {
         fn(e);
@@ -165,4 +174,50 @@ export const forEachImplementation = (fn: (e) => void) => {
 
 export const getStorageName = (benchmarkName: string, entityName: string, ...prefix: string[]) =>  {
     return [benchmarkName, ...prefix, entityName].join(" ")
+}
+
+
+
+export const getGroupedMeasurements = (benchmarkName, e, groupBy: (p: Measurement) => any, mType: MeasurementType) => {
+
+    const dataPoints: Measurement[] = dataStores.get(getStorageName(benchmarkName, e.name));
+
+    const storeName = getStorageName(benchmarkName, e.name, "avg", groupBy.toString(), mType)
+    dataStores.set(storeName, new Array<Measurement>());
+
+    const avgDataPoints: Measurement[] = dataStores.get(storeName);
+
+    const groupedData = _.values(_.groupBy(dataPoints, groupBy));
+
+    avgDataPoints.push(...groupedData.map((d: Measurement[]): Measurement => {
+            const executionTimes: number[] = d.map(v => getMeasurementValue(v, mType));
+
+            return {
+                value: executionTimes.reduce(
+                    (accumulator,
+                     currentValue,
+                     currentIndex,
+                     array
+                    ) => accumulator + currentValue / array.length
+                    , 0),
+                unit: "ms",
+                label: "avg " + mType,
+                partialMeasurements: [
+                    ...d.map((m): SingleMeasurement => ({
+                        label: mType,
+                        value: getMeasurementValue(m, mType),
+                        reference: m.reference,
+                        referenceInformation: {
+                            round: m.referenceInformation.round
+                        },
+                        unit: "unit" in m ? m.unit : undefined
+                    }))
+                ],
+                referenceInformation: {
+                    treeDepth: d[0].referenceInformation.treeDepth,
+                    nodeID: d[0].referenceInformation.nodeID
+                }
+            };
+        }
+    ))
 }

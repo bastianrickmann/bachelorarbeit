@@ -1,6 +1,6 @@
 import {Repository} from "typeorm";
 
-export type Measurement = (SingleMeasurement | CombinedMeasurement) & Reference;
+export type Measurement = (SingleMeasurement | CombinedMeasurement | (SingleMeasurement & CombinedMeasurement));
 export enum MeasurementType {
     EXECUTION_TIME = "executionTime",
     QUERY_TIME = "queryTime",
@@ -15,19 +15,19 @@ export enum MeasurementUnit {
 export type CombinedMeasurement = {
     label: MeasurementType | string;
     partialMeasurements: Array<SingleMeasurement>;
-};
+} & Reference;
 
 export type SingleMeasurement = {
     label: MeasurementType | string;
     value: number;
     unit?: string;
-};
+} & Reference;
 
 
 export type Reference = {
-    reference: any;
+    reference?: any;
     referenceRepository?: Repository<any>;
-    referenceInformation: {
+    referenceInformation?: {
         [key: string]: any;
     } & TreePosition;
 };

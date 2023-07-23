@@ -1,6 +1,13 @@
 import Benchmark from "../benchmark";
 import {faker} from "@faker-js/faker/locale/de";
-import {AVGMeasurementPoint, dataStores, forEachImplementation, getStorageName, MeasurementPoint} from "../helpers";
+import {
+    AVGMeasurementPoint,
+    dataStores,
+    forEachImplementation,
+    getGroupedMeasurements,
+    getMeasurementValue,
+    getStorageName
+} from "../helpers";
 import _ from "lodash";
 import Measurement, {MeasurementType, MeasurementUnit} from "../types";
 
@@ -39,52 +46,70 @@ CreateBenchmark.setPostProcessingFunction((benchmarkName) => {
 
     forEachImplementation((e) => {
 
+        getGroupedMeasurements(benchmarkName, e, p => p.referenceInformation.nodeID, MeasurementType.EXECUTION_TIME)
+        getGroupedMeasurements(benchmarkName, e, p => p.referenceInformation.treeDepth, MeasurementType.EXECUTION_TIME)
 
+        /*
         // avg base on NodeID
 
-        const dataPoints: MeasurementPoint[] = dataStores.get(getStorageName(benchmarkName, e.name));
+        const dataPoints: Measurement[] = dataStores.get(getStorageName(benchmarkName, e.name));
 
-        dataStores.set(getStorageName(benchmarkName, e.name, "avg"), new Array<AVGMeasurementPoint>());
+        dataStores.set(getStorageName(benchmarkName, e.name, "avg"), new Array<Measurement>());
 
-        const avgDataPoints: AVGMeasurementPoint[] = dataStores.get(getStorageName(benchmarkName, e.name, "avg"));
+        const avgDataPoints: Measurement[] = dataStores.get(getStorageName(benchmarkName, e.name, "avg"));
 
-        const groupedData = _.values(_.groupBy(dataPoints, (p) => p.nodeId));
+        const groupedData = _.values(_.groupBy(dataPoints, (p: Measurement) => p.referenceInformation.nodeID));
 
-        avgDataPoints.push(...groupedData.map((d): AVGMeasurementPoint => {
-                const executionTimes: number[] = d.map(v => v.executionTime);
+        avgDataPoints.push(...groupedData.map((d: Measurement[]): Measurement => {
+                const executionTimes: number[] = d.map(v => getMeasurementValue(v, MeasurementType.EXECUTION_TIME));
 
-                return ({
-                    nodeId: d[0].nodeId,
-                    treeDepth: d[0].treeDepth,
-                    executionTime: d.map(v => v.executionTime),
-                    avgExecutionTime: executionTimes.reduce(
-                        (accumulator,
-                         currentValue,
-                         currentIndex,
-                         array
-                        ) => accumulator + (currentValue / array.length)
-                        , 0)
-                })
+                return {
+                    value: executionTimes.reduce(
+                            (accumulator,
+                             currentValue,
+                             currentIndex,
+                             array
+                            ) => accumulator + currentValue / array.length
+                            , 0),
+                    unit: "ms",
+                    label: "avg execution Time",
+                    partialMeasurements: [
+                        ...d.map((m): SingleMeasurement => ({
+                            label: "executionTime",
+                            value: getMeasurementValue(m, MeasurementType.EXECUTION_TIME),
+                            reference: m.reference,
+                            referenceInformation: {
+                                round: m.referenceInformation.round
+                            },
+                            unit: "ms"
+                        }))
+                    ],
+                    referenceInformation: {
+                        treeDepth: d[0].referenceInformation.treeDepth,
+                        nodeID: d[0].referenceInformation.nodeID
+                    }
+                };
             }
-        ))
+        ))*/
 
+        /*
         // avg Base on treeDepth
 
         const nameDepth = getStorageName(benchmarkName, e.name);
-        const dataPointsDepth: MeasurementPoint[] = dataStores.get(nameDepth);
+        const dataPointsDepth: Measurement[] = dataStores.get(nameDepth);
 
         dataStores.set(getStorageName(benchmarkName, e.name, "avg", "treeDepth"), new Array<any>());
 
         const avgDataPointsDepth: any[] = dataStores.get(getStorageName(benchmarkName, e.name, "avg", "treeDepth"));
 
-        const groupedDataDepth = _.values(_.groupBy(dataPointsDepth, (p) => p.treeDepth));
+        const groupedDataDepth = _.values(_.groupBy(dataPointsDepth, (p) => p.referenceInformation.treeDepth));
 
         avgDataPointsDepth.push(...groupedDataDepth.map((d): any => {
-                const executionTimes: number[] = d.map(v => v.executionTime);
+                const executionTimes: number[] = d.map(v => getMeasurementValue(v, MeasurementType.EXECUTION_TIME));
 
                 return ({
                     treeDepth: d[0].treeDepth,
-                    executionTime: d.map(v => v.executionTime),
+                    executionTime: executionTimes,
                     avgExecutionTime: executionTimes.reduce(
                         (accumulator,
                          currentValue,
@@ -95,9 +120,10 @@ CreateBenchmark.setPostProcessingFunction((benchmarkName) => {
                 })
             }
         ))
+        */
     });
 
-
+    /*
 
     type cad = {
         nodeId: number;
@@ -151,7 +177,7 @@ CreateBenchmark.setPostProcessingFunction((benchmarkName) => {
 
 
 
-
+    */
 
 
 });
