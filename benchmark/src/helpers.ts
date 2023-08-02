@@ -5,7 +5,14 @@ import path from "path";
 import {Repository} from "typeorm";
 import Settings from "./settings";
 import {faker} from "@faker-js/faker/locale/de";
-import Measurement, {MeasurementType, MeasurementUnit, Reference, SingleMeasurement} from "./types";
+import Measurement, {
+    MeasurementComparison,
+    MeasurementKeyWords,
+    MeasurementType,
+    MeasurementUnit,
+    Reference,
+    SingleMeasurement
+} from "./types";
 import _ from "lodash";
 
 // General helpers
@@ -182,7 +189,7 @@ export const getGroupedMeasurements = (benchmarkName, e, groupBy: (p: Measuremen
 
     const dataPoints: Measurement[] = dataStores.get(getStorageName(benchmarkName, e.name));
 
-    const storeName = getStorageName(benchmarkName, e.name, "avg", groupBy.toString(), mType)
+    const storeName = getStorageName(benchmarkName, e.name, MeasurementKeyWords.AVG, groupBy.toString(), mType)
     dataStores.set(storeName, new Array<Measurement>());
 
     const avgDataPoints: Measurement[] = dataStores.get(storeName);
@@ -201,7 +208,7 @@ export const getGroupedMeasurements = (benchmarkName, e, groupBy: (p: Measuremen
                     ) => accumulator + currentValue / array.length
                     , 0),
                 unit: "ms",
-                label: "avg " + mType,
+                label: MeasurementKeyWords.AVG + " " + mType,
                 partialMeasurements: [
                     ...d.map((m): SingleMeasurement => ({
                         label: mType,
@@ -220,4 +227,19 @@ export const getGroupedMeasurements = (benchmarkName, e, groupBy: (p: Measuremen
             };
         }
     ))
+}
+
+
+export const compareMeasurements = (benchmarkName, ...prefix) => {
+
+    const comp: MeasurementComparison = { }
+
+    forEachImplementation((e) => {
+
+        const measurements: Measurement[] = dataStores.get(getStorageName(benchmarkName, e.name, ...prefix));
+        comp[e.name] = measurements;
+
+    })
+
+    dataStores.set(getStorageName(benchmarkName, MeasurementKeyWords.COMP, ...prefix), comp);
 }

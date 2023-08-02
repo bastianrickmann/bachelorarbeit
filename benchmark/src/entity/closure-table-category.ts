@@ -1,25 +1,29 @@
 import {
     Entity,
-    Tree,
     Column,
-    PrimaryGeneratedColumn,
-    TreeChildren,
-    TreeParent, TreeLevelColumn,
+    PrimaryGeneratedColumn, AfterInsert, OneToMany, Tree, TreeLevelColumn, TreeParent, TreeChildren,
 } from "typeorm";
+import { ClosureCategory_Closure } from "./closure-table-category-closure"
+import {AppDataSource} from "../data-source";
 
 @Entity()
-@Tree("closure-table")
+@Tree("closure-table", {
+    closureTableName: "category_closure",
+    ancestorColumnName: (column) => column.propertyName + "_ancestor",
+    descendantColumnName: (column) => column.propertyName + "_descendant",
+})
 export class ClosureCategory {
 
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn({type: "integer"})
     id: number;
 
     @Column()
     name: string;
 
-    @TreeChildren()
-    children: ClosureCategory[];
-
     @TreeParent()
-    parent: ClosureCategory;
+    parent;
+
+    @TreeLevelColumn()
+    level: number;
+
 }

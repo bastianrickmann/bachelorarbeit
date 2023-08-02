@@ -4,6 +4,7 @@ import {ClosureCategory} from "./entity/closure-table-category";
 import {AdjacenyCategory} from "./entity/adjaceny-list-category";
 import {NestedCategory} from "./entity/nested-set-category";
 import {MaterializedCategory} from "./entity/materialized-path-category";
+import {ClosureCategory_Closure} from "./entity/closure-table-category-closure";
 
 export const entities = [ClosureCategory, AdjacenyCategory, MaterializedCategory, NestedCategory];
 

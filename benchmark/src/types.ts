@@ -8,6 +8,15 @@ export enum MeasurementType {
     RESPONSE_BUILD_TIME = "responseBuildTime"
 }
 
+export enum MeasurementKeyWords {
+    AVG = "avg",
+    COMP = "comp"
+}
+
+export type MeasurementComparison = {
+    [key: string]: Measurement | Measurement[];
+}
+
 export enum MeasurementUnit {
     MS = "ms",
 }

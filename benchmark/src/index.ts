@@ -1,25 +1,7 @@
-import {
-    AppDataSource
-} from "./data-source"
 import figlet from "figlet";
 import chalk from "chalk";
-import {faker} from "@faker-js/faker/locale/de";
-import cliProgress from "cli-progress";
-import {TreeRepository} from "typeorm";
-import _ from "lodash";
-import {
-    TestFunction,
-    MeasurementPoint,
-    runTestForEachTreeNode,
-    allRunsCompleted,
-    writeDataSetToFile,
-    dataStores,
-    AVGMeasurementPoint,
-    getAvgExecutionTime, forEachImplementation
-} from "./helpers";
-import Settings from "./settings";
 import CreateBenchmark from "./benchmarks/create";
-import GetAncestorsBenchmark from "./benchmarks/find";
+import "reflect-metadata";
 
 
 

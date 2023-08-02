@@ -88,7 +88,7 @@ export default class Benchmark {
 
             forEachImplementation(async (e) => {
 
-                await this.preRunFunction(AppDataSource.getTreeRepository(e));
+                await this.preRunFunction(AppDataSource.manager.getTreeRepository(e));
 
                 const bar = multibar.create(0,0);
 
