@@ -1,6 +1,7 @@
 import figlet from "figlet";
 import chalk from "chalk";
 import CreateBenchmark from "./benchmarks/create";
+import { buildDB } from "./db/database"
 import "reflect-metadata";
 
 

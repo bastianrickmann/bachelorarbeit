@@ -18,19 +18,19 @@ CreateBenchmark.setTestFunction(async (executionInformation) => {
     let newRootNode;
     if(executionInformation.reference) {
 
-        newRootNode = executionInformation.referenceRepository.create({
+        newRootNode = {
             name: faker.string.alphanumeric({length: 20}),
             parent: executionInformation.reference
-        });
+        };
     } else {
-        newRootNode = executionInformation.referenceRepository.create({
+        newRootNode = {
             name: faker.string.alphanumeric({length: 20}),
             parent: undefined
-        });
+        };
     }
 
     const startTime = Date.now();
-    const enteredNode = await executionInformation.referenceRepository.save(newRootNode);
+    const enteredNode = await executionInformation.referenceRepository.create(newRootNode);
     const endTime = Date.now();
 
     const measuredTime = endTime - startTime;

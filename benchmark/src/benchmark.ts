@@ -7,9 +7,10 @@ import {
     writeDataSetToFile
 } from "./helpers";
 import Settings from "./settings"
-import {AppDataSource} from "./data-source";
+import {AppDataSource, getRepository} from "./data-source";
 import chalk from "chalk";
 import cliProgress from "cli-progress";
+import {buildDB} from "./db/database";
 
 export default class Benchmark {
 
@@ -44,6 +45,7 @@ export default class Benchmark {
 
 
 
+
         await this.benchmark();
 
         await this.postProcessing(this.BenchmarkName);
@@ -63,18 +65,10 @@ export default class Benchmark {
         for(let ti = 1; ti <= Settings.ROUNDS; ti++) {
 
 
+            await buildDB();
+
             console.log(chalk.greenBright.underline.italic.bold(`${this.BenchmarkName} BENCHMARKRUN #${ti}`));
 
-            await AppDataSource.initialize();
-
-            if (!AppDataSource.isInitialized) {
-                console.info(chalk.red.bold("DataSource did not connect with Database!"));
-                return;
-            }
-
-            await AppDataSource.synchronize(true);
-
-            console.info(chalk.blackBright(" - DataSource synced"));
 
 
 
@@ -92,12 +86,12 @@ export default class Benchmark {
 
                 const bar = multibar.create(0,0);
 
-                await runTestForEachTreeNode(ti, getStorageName(this.BenchmarkName, e.name), this.testFunction, AppDataSource.getTreeRepository(e), Settings.ROOT_NODE_COUNT, Settings.BRANCH_NODE_COUNT, Settings.TREE_DEPTH, bar);
+                await runTestForEachTreeNode(ti, getStorageName(this.BenchmarkName, e.name), this.testFunction, getRepository(e), Settings.ROOT_NODE_COUNT, Settings.BRANCH_NODE_COUNT, Settings.TREE_DEPTH, bar);
             });
 
             await allRunsCompleted(multibar);
 
-            await AppDataSource.destroy();
+
         }
 
     }
