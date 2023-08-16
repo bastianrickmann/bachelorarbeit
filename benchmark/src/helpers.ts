@@ -3,7 +3,7 @@ import {AppDataSource, entities} from "./data-source"
 import fs from "fs";
 import path from "path";
 import {Repository} from "typeorm";
-import Settings from "./settings";
+import Settings, {BENCHMARKS_START_TIME} from "./settings";
 import {faker} from "@faker-js/faker/locale/de";
 import Measurement, {
     MeasurementComparison,
@@ -132,22 +132,13 @@ export const runTestForEachTreeNode = async (round: number, name: string, testFu
 
 export const writeDataSetToFile = () => {
 
-    //wipe measurements folder
-    const directory ="../ui/public";
-    fs.readdir(directory, (err, files) => {
-        if (err) throw err;
-
-        for (const file of files) {
-            fs.unlink(path.join(directory, file), (err) => {
-                if (err) throw err;
-            });
-        }
-    });
-
     //write new measurement data
 
+    fs.mkdir('../ui/public/' + Settings.BENCHMARKS_START_TIME.toISOString().split(".")[0], { recursive: true }, (err) => {
+        if (err) throw err;
+    });
     for (const [name, data] of dataStores.entries()) {
-        fs.writeFileSync('../ui/public/' + name + '.json', JSON.stringify(data, null ,2));
+        fs.writeFileSync('../ui/public/' + Settings.BENCHMARKS_START_TIME.toISOString().split(".")[0] + '/' + name + '.json', JSON.stringify(data, null ,2), {flag: "w"});
     }
 }
 
