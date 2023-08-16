@@ -134,11 +134,11 @@ export const writeDataSetToFile = () => {
 
     //write new measurement data
 
-    fs.mkdir('../ui/public/' + Settings.BENCHMARKS_START_TIME.toISOString().split(".")[0], { recursive: true }, (err) => {
+    fs.mkdir('../ui/public/' + Settings.BENCHMARKS_START_TIME.toISOString().split(".")[0] + ' | ' + Settings.EXPECTED_NODE_COUNT + ' Nodes', { recursive: true }, (err) => {
         if (err) throw err;
     });
     for (const [name, data] of dataStores.entries()) {
-        fs.writeFileSync('../ui/public/' + Settings.BENCHMARKS_START_TIME.toISOString().split(".")[0] + '/' + name + '.json', JSON.stringify(data, null ,2), {flag: "w"});
+        fs.writeFileSync('../ui/public/' + Settings.BENCHMARKS_START_TIME.toISOString().split(".")[0] + ' | ' + Settings.EXPECTED_NODE_COUNT + ' Nodes/' + name + '.json', JSON.stringify(data, null ,2), {flag: "w"});
     }
 }
 
