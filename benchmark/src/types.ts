@@ -1,5 +1,3 @@
-import {Repository} from "typeorm";
-
 export type Measurement = (SingleMeasurement | CombinedMeasurement | (SingleMeasurement & CombinedMeasurement));
 export enum MeasurementType {
     EXECUTION_TIME = "executionTime",
@@ -35,7 +33,7 @@ export type SingleMeasurement = {
 
 export type Reference = {
     reference?: any;
-    referenceRepository?: Repository<any>;
+    referenceRepository?: any;
     referenceInformation?: {
         [key: string]: any;
     } & TreePosition;

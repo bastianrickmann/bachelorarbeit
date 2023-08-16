@@ -18,6 +18,8 @@ export default class Benchmark {
 
     private testFunction: MeasurementFunction;
 
+    public runWithSelfRef: boolean = false;
+
     private postProcessing: (...args: any[]) => any;
 
     private preRunFunction: (...args: any[]) => any = () => {};
@@ -36,6 +38,10 @@ export default class Benchmark {
 
     public setPreRunFunction(fn: (repository) => void) {
         this.preRunFunction = fn;
+    }
+
+    public setSelfRef(b: boolean) {
+        this.runWithSelfRef = b;
     }
 
 
@@ -80,13 +86,13 @@ export default class Benchmark {
             }, cliProgress.Presets.shades_grey);
 
 
-            forEachImplementation(async (e) => {
+            await forEachImplementation(async (e) => {
 
-                await this.preRunFunction(AppDataSource.manager.getTreeRepository(e));
+                await this.preRunFunction(getRepository(e));
 
-                const bar = multibar.create(0,0);
+                const bar = multibar.create(0, 0);
 
-                await runTestForEachTreeNode(ti, getStorageName(this.BenchmarkName, e.name), this.testFunction, getRepository(e), Settings.ROOT_NODE_COUNT, Settings.BRANCH_NODE_COUNT, Settings.TREE_DEPTH, bar);
+                await runTestForEachTreeNode(ti, getStorageName(this.BenchmarkName, e.name), this.testFunction, getRepository(e), Settings.ROOT_NODE_COUNT, Settings.BRANCH_NODE_COUNT, Settings.TREE_DEPTH, bar, this.runWithSelfRef);
             });
 
             await allRunsCompleted(multibar);

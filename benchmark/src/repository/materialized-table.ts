@@ -41,5 +41,48 @@ export const MaterializedRepository = {
                 name: inserted.rows[0].name
             }
         }
+    },
+
+    findAncestors: async (c: MaterializedCategory): Promise<MaterializedCategory[]> => {
+        const findQuery: string =
+            ` SELECT *
+              FROM categorymaterialized
+              WHERE
+                      (SELECT path
+                       FROM categorymaterialized
+                       WHERE id = $1 LIMIT 1
+                      ) LIKE CONCAT(path,'%') AND id != $1
+            `;
+
+        const found = await poolConnection.query(findQuery, [c.id]);
+        return found.rows.map(r => {
+            return (<MaterializedCategory>{
+                children: [], parent: null,
+                id: r.id,
+                name: r.name,
+                leftnode: r.leftnode,
+                rightnode: r.rightnode
+            });
+        })
+    },
+
+    findDescendant: async (c: MaterializedCategory): Promise<MaterializedCategory[]> => {
+        const findQuery: string =
+            ` SELECT *
+              FROM categorymaterialized
+              WHERE path LIKE CONCAT('%', CONCAT($1::text,'%')) AND id != $2;
+            `;
+
+        const found = await poolConnection.query(findQuery, [c.id.toString(), c.id]);
+        return found.rows.map(r => {
+            return (<MaterializedCategory>{
+                children: [], parent: null,
+                id: r.id,
+                name: r.name,
+                leftnode: r.leftnode,
+                rightnode: r.rightnode
+            });
+        })
+
     }
 }

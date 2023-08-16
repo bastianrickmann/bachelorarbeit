@@ -1,42 +1,36 @@
 import Benchmark from "../benchmark";
-import {faker} from "@faker-js/faker/locale/de";
 import {
+    buildTree,
+    compareMeasurements,
     forEachImplementation,
     getGroupedMeasurements,
-    compareMeasurements
 } from "../helpers";
 import Settings from "../settings";
-import Measurement, { MeasurementType, MeasurementUnit} from "../types";
+import Measurement, {MeasurementType, MeasurementUnit} from "../types";
 
-const CreateBenchmark = new Benchmark("CREATE");
+const GetAncestorsBenchmark = new Benchmark("ANCESTORS");
 
-CreateBenchmark.setTestFunction(async (executionInformation) => {
-    let newRootNode;
-    if(executionInformation.reference) {
 
-        newRootNode = {
-            name: faker.string.alphanumeric({length: 20}),
-            parent: executionInformation.reference
-        };
-    } else {
-        newRootNode = {
-            name: faker.string.alphanumeric({length: 20}),
-            parent: undefined
-        };
-    }
+GetAncestorsBenchmark.setPreRunFunction(async (repository) => {
+    await buildTree(repository, Settings.ROOT_NODE_COUNT, Settings.BRANCH_NODE_COUNT, Settings.TREE_DEPTH);
+});
+
+GetAncestorsBenchmark.runWithSelfRef = true;
+
+GetAncestorsBenchmark.setTestFunction(async (executionInformation) => {
 
     const startTime = Date.now();
-    const enteredNode = await executionInformation.referenceRepository.create(newRootNode);
+    const foundNodes = await executionInformation.referenceRepository.findAncestors({id: executionInformation.referenceInformation.nodeID});
     const endTime = Date.now();
 
     const measuredTime = endTime - startTime;
 
     const m: Measurement = {
-        reference: enteredNode,
+        reference: executionInformation.reference,
         referenceInformation: {
             round: executionInformation.referenceInformation.round,
             treeDepth: executionInformation.referenceInformation.treeDepth,
-            nodeID: enteredNode.id
+            nodeID: executionInformation.referenceInformation.nodeID
         },
         label: MeasurementType.EXECUTION_TIME,
         value: measuredTime,
@@ -47,7 +41,7 @@ CreateBenchmark.setTestFunction(async (executionInformation) => {
 
 
 
-CreateBenchmark.setPostProcessingFunction((benchmarkName) => {
+GetAncestorsBenchmark.setPostProcessingFunction((benchmarkName) => {
 
 
     forEachImplementation((e) => {
@@ -67,4 +61,7 @@ CreateBenchmark.setPostProcessingFunction((benchmarkName) => {
 
 
 
-export default CreateBenchmark;
+
+
+
+export default GetAncestorsBenchmark;

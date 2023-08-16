@@ -10,7 +10,7 @@ import {AdjacencyRepository} from "./repository/adjacency-table";
 import {MaterializedRepository} from "./repository/materialized-table";
 import {NestedRepository} from "./repository/nested-table";
 
-export const entities = [ClosureCategory, AdjacenyCategory, MaterializedCategory, NestedCategory];
+export const entities = [ClosureCategory, MaterializedCategory, NestedCategory, AdjacenyCategory];
 
 export const getRepository = (e) => {
     switch(e) {

@@ -43,5 +43,45 @@ export const ClosureRepository = {
             name: inserted.rows[0].name,
             parent: c.parent
         }
+    },
+
+    findAncestors: async (c: NestedCategory): Promise<NestedCategory[]> => {
+        const findQuery: string =
+            `       SELECT c.*
+                        FROM categoryclosure c
+                        JOIN categoryclosure_closure cc on c.id = cc.ancestor
+                        WHERE cc.descendant = $1 AND cc.depth > 0
+                    `;
+
+        const found = await poolConnection.query(findQuery, [c.id]);
+        return found.rows.map(r => {
+            return ({
+                children: [], parent: null,
+                id: r.id,
+                name: r.name,
+                leftnode: r.leftnode,
+                rightnode: r.rightnode
+            });
+        })
+
+    },
+    findDescendant: async  (c: NestedCategory): Promise<NestedCategory[]> => {
+        const findQuery: string =
+            `       SELECT c.*
+                    FROM categoryclosure c
+                             JOIN categoryclosure_closure cc on c.id = cc.descendant
+                    WHERE cc.ancestor = $1 AND cc.depth > 0
+            `;
+
+        const found = await poolConnection.query(findQuery, [c.id]);
+        return found.rows.map(r => {
+            return ({
+                children: [], parent: null,
+                id: r.id,
+                name: r.name,
+                leftnode: r.leftnode,
+                rightnode: r.rightnode
+            });
+        })
     }
 }

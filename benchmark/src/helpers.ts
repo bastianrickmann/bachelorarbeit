@@ -66,7 +66,7 @@ export const iterateTree = async (repository, nodeFunction, rootCount: number, c
     const depthCall = async (nodeFunction, parentNode, depth: number) => {
         for (let subNodeI = 0; subNodeI < childrenCount; subNodeI++) {
             expectedIndex++;
-            let newSubNode = await nodeFunction(parentNode, depth, repository, bar);
+            let newSubNode = await nodeFunction(parentNode, depth, repository, bar, expectedIndex);
             if (depth < treeDepth) {
                 await depthCall(nodeFunction, newSubNode, depth + 1);
             }
@@ -75,7 +75,7 @@ export const iterateTree = async (repository, nodeFunction, rootCount: number, c
 
     for (let rootI = 0; rootI < rootCount; rootI++) {
         expectedIndex++;
-        let newRoot = await nodeFunction(null, 1, repository, bar);
+        let newRoot = await nodeFunction(null, 1, repository, bar, expectedIndex);
         if (1 < treeDepth) {
             await depthCall(nodeFunction, newRoot, 2);
         }
@@ -84,12 +84,10 @@ export const iterateTree = async (repository, nodeFunction, rootCount: number, c
 
 export const buildTree = async (repository, rootCount: number, childrenCount: number, treeDepth: number) => {
     await iterateTree(repository, async (referenceNode, depth, repository) => {
-        const newNode = repository.create({
+        return await repository.create({
             name: faker.string.alphanumeric({length: 20}),
             parent: referenceNode
         });
-        const enteredNode = await repository.save(newNode);
-        return enteredNode;
     }, rootCount, childrenCount, treeDepth);
 
 }
@@ -97,7 +95,7 @@ export const buildTree = async (repository, rootCount: number, childrenCount: nu
 
 
 
-export const runTestForEachTreeNode = async (round: number, name: string, testFunction: MeasurementFunction, repository, rootCount: number, childrenCount: number, treeDepth: number, bar: any) => {
+export const runTestForEachTreeNode = async (round: number, name: string, testFunction: MeasurementFunction, repository, rootCount: number, childrenCount: number, treeDepth: number, bar: any, withSelfRef: boolean = false) => {
 
 
     //create.ts DataStore
@@ -108,21 +106,21 @@ export const runTestForEachTreeNode = async (round: number, name: string, testFu
 
     //set bar name, settings and start it
     bar.start(Settings.EXPECTED_NODE_COUNT, 0, {testname: name});
-    await iterateTree(repository, async (referenceNode, depth, repository) => {
-
+    await iterateTree(repository, async (referenceNode, depth, repository, ib,  expectedNodeId) => {
         const response = await testFunction(
             {
                                 reference: referenceNode,
                                 referenceRepository: repository,
                                 referenceInformation: {
-                                                rounde: round,
-                                                treeDepth: depth
+                                                round: round,
+                                                treeDepth: depth,
+                                                nodeID: expectedNodeId
                                                 }
                             }
             );
         dataStores.get(name).push(response);
 
-        bar.update(response.reference.id, {curAvgTime: getAvgExecutionTime(dataStores.get(name))});
+        bar.update(response.referenceInformation.nodeID, {curAvgTime: getAvgExecutionTime(dataStores.get(name))});
 
         return response.reference;
 
@@ -173,9 +171,9 @@ export const getMeasurementValue = (m: Measurement, valueName: MeasurementType) 
     }
 }
 
-export const forEachImplementation = (fn: (e) => void) => {
-    for(let e of entities) {
-        fn(e);
+export const forEachImplementation = async (fn: (e) => void) => {
+    for (let e of entities) {
+        await fn(e);
     }
 }
 
@@ -189,7 +187,9 @@ export const getGroupedMeasurements = (benchmarkName, e, groupBy: (p: Measuremen
 
     const dataPoints: Measurement[] = dataStores.get(getStorageName(benchmarkName, e.name));
 
-    const storeName = getStorageName(benchmarkName, e.name, MeasurementKeyWords.AVG, groupBy.toString(), mType)
+    const splitoutGroupName = groupBy.toString().split('.')
+
+    const storeName = getStorageName(benchmarkName, e.name, MeasurementKeyWords.AVG, groupBy.toString().split('.')[splitoutGroupName.length - 1], mType)
     dataStores.set(storeName, new Array<Measurement>());
 
     const avgDataPoints: Measurement[] = dataStores.get(storeName);
@@ -231,6 +231,8 @@ export const getGroupedMeasurements = (benchmarkName, e, groupBy: (p: Measuremen
 
 
 export const compareMeasurements = (benchmarkName, ...prefix) => {
+
+    prefix = prefix.map(p => { const l = p.toString().split('.'); return l[l.length - 1]});
 
     const comp: MeasurementComparison = { }
 

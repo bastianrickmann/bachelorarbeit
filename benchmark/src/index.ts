@@ -3,6 +3,8 @@ import chalk from "chalk";
 import CreateBenchmark from "./benchmarks/create";
 import { buildDB } from "./db/database"
 import "reflect-metadata";
+import GetAncestorsBenchmark from "./benchmarks/findAnc";
+import GetDescendantBenchmark from "./benchmarks/findDests";
 
 
 
@@ -19,9 +21,13 @@ figlet("Benchmark", (error, result) => {
     await Benchmark1.run();
 
 
-    //const Benchmark2 = GetAncestorsBenchmark;
+    const Benchmark2 = GetAncestorsBenchmark;
 
-    //await Benchmark2.run();
+    await Benchmark2.run();
+
+    const Benchmark3 = GetDescendantBenchmark;
+
+    await Benchmark3.run();
 
     /*** Benchmark run ***/
 })();
