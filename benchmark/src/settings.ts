@@ -3,10 +3,10 @@
 
 export const ROOT_NODE_COUNT: number = 1;
 export const TREE_DEPTH: number = 15;
-export const BRANCH_NODE_COUNT: number = 2;
+export const BRANCH_NODE_COUNT: number = 1;
 
 export const EXPECTED_NODE_COUNT: number = (ROOT_NODE_COUNT * (BRANCH_NODE_COUNT > 1 ? (Math.pow(BRANCH_NODE_COUNT, TREE_DEPTH) - 1) / (BRANCH_NODE_COUNT - 1) : BRANCH_NODE_COUNT * TREE_DEPTH));
-export const ROUNDS: number = 2;
+export const ROUNDS: number = 50;
 
 export const BENCHMARKS_START_TIME = new Date();
 

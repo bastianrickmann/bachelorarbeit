@@ -1,5 +1,6 @@
 "use client"
 import { Card, AreaChart, Title, Text } from "@tremor/react";
+import { LineChart } from "@tremor/react";
 
 
 export type cad = {
@@ -13,7 +14,7 @@ export default function Chart({ title, description, data, suffix, x }: { title: 
         <Card>
             <Title>{ title }</Title>
             <Text>{ description }</Text>
-            <AreaChart
+            <LineChart
                 className="mt-4 h-80"
                 data={data}
                 categories={["AdjacenyCategory", "NestedCategory", "MaterializedCategory", "ClosureCategory"]}

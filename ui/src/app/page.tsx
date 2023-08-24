@@ -8,46 +8,51 @@ export default function Home() {
 
     const [data1, setData1] = useState<cad[]>([]);
     const [data2, setData2] = useState<any[]>([]);
+    const [data3, setData3] = useState<any[]>([]);
+
+    const [pathFolder, setPathFolder] = useState("2023-08-24T21:04:04 | 15 Nodes")
 
 
     useEffect(() => {
         ( async () => {
             const f = async (url: string): Promise<Array<any>> => new Promise<Array<any>>(async resolve => {
-                const records = new Array<any>();
-
                 const data = await fetch(url, {cache: "no-cache"})
-                    .then((response) => response.text());
-                const parser = parse(data, {
-                    trim: true,
-                    skip_empty_lines: true,
-                    columns: true,
-                    cast: true
-                });
-                // Use the readable stream api
-                parser.on('readable', function () {
-                    let record: cad;
-                    while ((record = parser.read()) !== null) {
-                        console.log(record);
-                        records.push(record);
-                    }
-                    resolve(records);
-                });
+                    .then((response) => response.json());
+                console.log("T:" , data)
+
+                const g = [];
+
+                data.AdjacenyCategory.forEach((a, i, s) => {
+                    g.push(
+                        {
+                            nodeId: a.referenceInformation.nodeID,
+                            AdjacenyCategory: data.AdjacenyCategory[i].value,
+                            NestedCategory: data.NestedCategory[i].value,
+                            MaterializedCategory: data.MaterializedCategory[i].value,
+                            ClosureCategory: data.ClosureCategory[i].value,
+                        }
+                    )
+                })
+                resolve(g)
             });
 
-            const t = await f("http://localhost:3000/Create.csv");
-            const t2 = await f("http://localhost:3000/Create TreeDepth.csv");
+
+            const t = await f("http://localhost:3000/" + pathFolder + "/CREATE avg nodeID executionTime comp.json");
+            const t2 = await f("http://localhost:3000/" + pathFolder + "/ANCESTORS avg treeDepth executionTime comp.json");
+            const t3 = await f("http://localhost:3000/" + pathFolder + "/DESCENDANTS avg treeDepth executionTime comp.json");
 
             setData1(t);
             setData2(t2);
+            setData3(t3);
         })();
-    }, [])
+    }, [pathFolder])
 
 
     return (
         <div className={"grid grid-cols-1 gap-8 m-4"}>
-            <Chart title={"Execution Time By Node ID"} description={"Shows a graph based on execution time of each node"} data={data1} suffix={"ms"}/>
-            <Chart title={"Execution Time By Tree Depth"} description={"Shows a graph based on execution time of tree depth"} data={data2} x={"treeDepth"} suffix={"ms"}/>
-
+            <Chart title={"Ausführungszeit pro Node"} description={"Der Graph zeigt den Durschnittswert aus 10 gleichen Ausführungen"} data={data1} x={"nodeId"} suffix={"ms"}/>
+            <Chart title={"Ausführungszeit pro Node"} description={"Der Graph zeigt den Durschnittswert aus 10 gleichen Ausführungen"} data={data2} x={"nodeId"} suffix={"ms"}/>
+            <Chart title={"Ausführungszeit pro Node"} description={"Der Graph zeigt den Durschnittswert aus 10 gleichen Ausführungen"} data={data3} x={"nodeId"} suffix={"ms"}/>
         </div>
     );
 }

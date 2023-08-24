@@ -23,16 +23,15 @@ export const ClosureRepository = {
                                                               (CategoryClosure_closure.depth + 1) as depth
                                                        FROM CategoryClosure_closure
                                                        WHERE CategoryClosure_closure.descendant = ${c.parent.id})
-                  RETURNING *`
+                `
             );
 
 
         } else {
             const query = ` INSERT INTO CategoryClosure_closure
-                  VALUES (${inserted.rows[0].id}, ${inserted.rows[0].id}, 0)
-                  RETURNING *`;
+                  VALUES ($1, $1, 0)`;
             const insertedClosure = await client.query(
-                query
+                query, [inserted.rows[0].id]
             );
         }
 

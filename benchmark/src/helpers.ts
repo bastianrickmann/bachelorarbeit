@@ -136,10 +136,11 @@ export const writeDataSetToFile = () => {
 
     fs.mkdir('../ui/public/' + Settings.BENCHMARKS_START_TIME.toISOString().split(".")[0] + ' | ' + Settings.EXPECTED_NODE_COUNT + ' Nodes', { recursive: true }, (err) => {
         if (err) throw err;
+        for (const [name, data] of dataStores.entries()) {
+            fs.writeFileSync('../ui/public/' + Settings.BENCHMARKS_START_TIME.toISOString().split(".")[0] + ' | ' + Settings.EXPECTED_NODE_COUNT + ' Nodes/' + name + '.json', JSON.stringify(data, null ,0), {flag: "w"});
+        }
     });
-    for (const [name, data] of dataStores.entries()) {
-        fs.writeFileSync('../ui/public/' + Settings.BENCHMARKS_START_TIME.toISOString().split(".")[0] + ' | ' + Settings.EXPECTED_NODE_COUNT + ' Nodes/' + name + '.json', JSON.stringify(data, null ,2), {flag: "w"});
-    }
+
 }
 
 export const getAvgExecutionTime = (timeStore: Measurement[]) => {
