@@ -63,21 +63,21 @@ export const getAllNodes = async (repository) => {
 export const iterateTree = async (repository, nodeFunction, rootCount: number, childrenCount: number, treeDepth: number, bar?: cliProgress.SingleBar) => {
 
     let expectedIndex = 0;
-    const depthCall = async (nodeFunction, parentNode, depth: number) => {
-        for (let subNodeI = 0; subNodeI < childrenCount; subNodeI++) {
-            expectedIndex++;
-            let newSubNode = await nodeFunction(parentNode, depth, repository, bar, expectedIndex);
-            if (depth < treeDepth) {
-                await depthCall(nodeFunction, newSubNode, depth + 1);
-            }
-        }
-    }
+
+    const stack = new Array();
 
     for (let rootI = 0; rootI < rootCount; rootI++) {
+        stack.push({parent: null, depth: 1});
+    }
+
+    while(stack.length !== 0) {
+        const p = stack.shift();
         expectedIndex++;
-        let newRoot = await nodeFunction(null, 1, repository, bar, expectedIndex);
-        if (1 < treeDepth) {
-            await depthCall(nodeFunction, newRoot, 2);
+        let newNode = await nodeFunction(p.parent, p.depth, repository, bar, expectedIndex);
+        if (p.depth < treeDepth) {
+            for (let subNodeI = 0; subNodeI < childrenCount; subNodeI++) {
+                stack.push({parent: newNode, depth: p.depth + 1})
+            }
         }
     }
 }
