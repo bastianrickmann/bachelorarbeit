@@ -10,6 +10,8 @@ import Measurement, { MeasurementType, MeasurementUnit} from "../types";
 
 const CreateBenchmark = new Benchmark("CREATE");
 
+CreateBenchmark.buildNewEachTime = true;
+
 CreateBenchmark.setTestFunction(async (executionInformation) => {
     let newRootNode;
     if(executionInformation.reference) {

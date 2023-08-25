@@ -20,6 +20,8 @@ export default class Benchmark {
 
     public runWithSelfRef: boolean = false;
 
+    public buildNewEachTime = false;
+
     private postProcessing: (...args: any[]) => any;
 
     private preRunFunction: (...args: any[]) => any = () => {};
@@ -64,14 +66,23 @@ export default class Benchmark {
 
     public async benchmark () {
 
+        if(!this.buildNewEachTime) {
+            await buildDB();
+        }
 
+        await forEachImplementation(async (e) => {
+
+            await this.preRunFunction(getRepository(e));
+
+         });
 
         /*** Benchmark run ***/
 
         for(let ti = 1; ti <= Settings.ROUNDS; ti++) {
 
-
-            await buildDB();
+            if(this.buildNewEachTime) {
+                await buildDB();
+            }
 
             console.log(chalk.greenBright.underline.italic.bold(`${this.BenchmarkName} BENCHMARKRUN #${ti}`));
 
@@ -87,8 +98,6 @@ export default class Benchmark {
 
 
             await forEachImplementation(async (e) => {
-
-                await this.preRunFunction(getRepository(e));
 
                 const bar = multibar.create(0, 0);
 

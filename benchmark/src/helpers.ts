@@ -199,9 +199,9 @@ export const getGroupedMeasurements = (benchmarkName, e, groupBy: (p: Measuremen
                      array
                     ) => accumulator + currentValue / array.length
                     , 0),
-                unit: "ms",
+                //unit: "ms",
                 label: MeasurementKeyWords.AVG + " " + mType,
-                partialMeasurements: [
+                /*partialMeasurements: [
                     ...d.map((m): SingleMeasurement => ({
                         label: mType,
                         value: getMeasurementValue(m, mType),
@@ -211,7 +211,7 @@ export const getGroupedMeasurements = (benchmarkName, e, groupBy: (p: Measuremen
                         },
                         unit: "unit" in m ? m.unit : undefined
                     }))
-                ],
+                ],*/
                 referenceInformation: {
                     treeDepth: d[0].referenceInformation.treeDepth,
                     nodeID: d[0].referenceInformation.nodeID
