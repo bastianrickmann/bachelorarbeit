@@ -10,7 +10,7 @@ export default function Home() {
     const [data2, setData2] = useState<any[]>([]);
     const [data3, setData3] = useState<any[]>([]);
 
-    const [pathFolder, setPathFolder] = useState("2023-08-24T21:04:04 | 15 Nodes")
+    const [pathFolder, setPathFolder] = useState("2023-08-24T17:00:49 | 25 Nodes")
 
 
     useEffect(() => {
@@ -26,10 +26,10 @@ export default function Home() {
                     g.push(
                         {
                             nodeId: a.referenceInformation.nodeID,
-                            AdjacenyCategory: data.AdjacenyCategory[i].value,
-                            NestedCategory: data.NestedCategory[i].value,
-                            MaterializedCategory: data.MaterializedCategory[i].value,
-                            ClosureCategory: data.ClosureCategory[i].value,
+                            "Adjazenzliste": data.AdjacenyCategory[i].value,
+                            "Nested Set": data.NestedCategory[i].value,
+                            "Materialized Path": data.MaterializedCategory[i].value,
+                            "Closure Table": data.ClosureCategory[i].value,
                         }
                     )
                 })

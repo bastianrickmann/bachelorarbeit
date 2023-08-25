@@ -17,7 +17,7 @@ export default function Chart({ title, description, data, suffix, x }: { title: 
             <LineChart
                 className="mt-4 h-80"
                 data={data}
-                categories={["AdjacenyCategory", "NestedCategory", "MaterializedCategory", "ClosureCategory"]}
+                categories={["Adjazenzliste", "Nested Set", "Materialized Path", "Closure Table"]}
                 index={x ?? "nodeId"}
                 colors={["indigo", "fuchsia", "red", "green"]}
                 yAxisWidth={60}
